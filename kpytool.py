@@ -19,92 +19,95 @@
 
 import argparse
 import logging
+from modules import ModuleReader
+from os import getcwd, environ, path
 
-parser = argparse.ArgumentParser('A tool which helps you to build KDE from sources')
+def main():
+    parser = argparse.ArgumentParser('A tool which helps you to build KDE from sources')
 
-parser.add_argument('--only-src', action = 'store_true',
-                    default = False, dest = 'src',
-                    help = 'Update the module, don\'t do anything else')
+    parser.add_argument('--only-src', action = 'store_true',
+                        default = False, dest = 'src',
+                        help = 'Update the module, don\'t do anything else')
 
-parser.add_argument('--no-src', action = 'store_true',
-                    default = False, dest = 'no_src',
-                    help = 'Don\'t update the module, but build it, configure it and install it')
+    parser.add_argument('--no-src', action = 'store_true',
+                        default = False, dest = 'no_src',
+                        help = 'Don\'t update the module, but build it, configure it and install it')
 
-parser.add_argument('--only-configure', action = 'store_true',
-                    default = False, dest = 'configure',
-                    help = 'Just configure the module, don\'t do anything else')
+    parser.add_argument('--only-configure', action = 'store_true',
+                        default = False, dest = 'configure',
+                        help = 'Just configure the module, don\'t do anything else')
 
-parser.add_argument('--only-build', action = 'store_true',
-                    default = False, dest = 'build',
-                    help = 'Just build the module, don\'t do anything else')
-
-
-parser.add_argument('--only-install', action = 'store_true',
-                    default = False, dest = 'install',
-                    help = 'Just install the module, don\'t do anything else')
-
-parser.add_argument('--debug', action = 'store_true',
-                    default = False, dest = 'debug',
-                    help = 'Use it in order to have a verbose output')
-
-results = parser.parse_args()
-#results = parser.parse_known_args()
-
-#create our logger
-logger = logging.getLogger('kpytool')
-
-if results.debug:
-    logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+    parser.add_argument('--only-build', action = 'store_true',
+                        default = False, dest = 'build',
+                        help = 'Just build the module, don\'t do anything else')
 
 
-if not results.src and \
-not results.configure and \
-not results.build and \
-not results.install:
-    #the user has used ./kpytool $someModule, so
-    #pretend that the above are correct!
-    #and update, configure, build and install
-    pass
+    parser.add_argument('--only-install', action = 'store_true',
+                        default = False, dest = 'install',
+                        help = 'Just install the module, don\'t do anything else')
 
-if results.src:
-    #dl
-    pass
+    configDefault = path.join(environ['HOME'], '.kpytool.cfg')
+    parser.add_argument('--config', action = 'store',
+                        default = configDefault, dest = 'config',
+                        help = 'Specify a new path for the kpytool config, the default is ~/.kpytool.cfg')
 
-if results.no_src:
-    #dl, configure, build and install
-    pass
+    parser.add_argument('--debug', action = 'store_true',
+                        default = False, dest = 'debug',
+                        help = 'Use it in order to have a debug output')
 
-if results.configure:
-    #configure
-    pass
+    #take the results and the modules
+    tmp = parser.parse_known_args()
+    results = tmp[0]
+    modules = tmp[1]
 
-if results.build:
-    #build
-    pass
+    #create our logger
+    logger = logging.getLogger('kpytool')
 
-if results.install:
-    #install
-    pass
+    if results.debug:
+        logger.setLevel(logging.DEBUG)
 
-"""
-print 'src:'
-print results.src
-print '\n'
-print 'nosrc:'
-print results.no_src
-print '\n'
-print 'configure:'
-print results.configure
-print '\n'
-print 'build:'
-print results.build
-print '\n'
-print 'install:'
-print results.install
-print '\n'
-"""
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s: %(name)s: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    logger.debug('This is namespace of argparse:\n' + str(results) + '\n')
+
+    logger.debug('These are the modules:\n' + str(modules) + '\n')
+
+    logger.debug('The kpytool config is:' + results.config)
+
+    m = ModuleReader('kdelibs')
+    m.parseData()
+    if not results.src and \
+    not results.configure and \
+    not results.build and \
+    not results.install:
+        #the user has used ./kpytool $someModule, so
+        #pretend that the above are correct!
+        #and update, configure, build and install
+        pass
+
+    elif results.src:
+        #dl
+        pass
+
+    elif results.no_src:
+        #dl, configure, build and install
+        pass
+
+    elif results.configure:
+        #configure
+        pass
+
+    elif results.build:
+        #build
+        pass
+
+    elif results.install:
+        #install
+        pass
+
+
+if __name__ == '__main__':
+    main()
