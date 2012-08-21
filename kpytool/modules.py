@@ -64,7 +64,7 @@ class ModuleReader(object):
     t[0]: module name, like kactivities
     t[1]: parent name, like frameworks
     t[2]: source path
-    t[3]: cvs, the link and branch(only for git)
+    t[3]: vcs, the link and branch(only for git)
     t[4]: build dir
     t[5]: install dir
     t[6]: build system args
@@ -74,7 +74,7 @@ class ModuleReader(object):
         return self._moduleInfo
 
    @moduleInfo.setter
-   def moduleInfor(self, info):
+   def moduleInfo(self, info):
        self._moduleInfo = info
 
     @property
@@ -155,6 +155,11 @@ class _KpytoolConfigReader(object):
             with open(self._kpytoolCfgPath, 'w') as kpytool_cfg:
                 kpytool_cfg.write(u.read())
 
+            #its unlikely the code to reach here, but if it does, kpytool won't
+            #work correctly so we have to be sure. For sure some other exception
+            #would be raised but even in uber failure don't scary the user
+            #TODO raise an exception here if the file doesn't exist
+
     """
     Verify if the item is valid
     """
@@ -184,6 +189,11 @@ class _KpytoolConfigReader(object):
 
                 #extract the tarball
                 tar.extractall(self.kpytool_configs)
+
+            #its unlikely the code to reach here, but if it does, kpytool won't
+            #work correctly so we have to be sure. For sure some other exception
+            #would be raised but even in uber failure don't scary the user
+            #TODO raise an exception here if the dirs doesn't exist
 
 
 
