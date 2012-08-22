@@ -31,7 +31,7 @@ from the kpytool.cfg file
 *check if ModuleReader.moduleInfo property returns valid data
 """
 
-from kpytool.modules import ModuleReader
+from modules import ModuleReader
 from os import path, environ
 import logging
 
@@ -74,6 +74,7 @@ def do():
         logger.debug('the default list modules aren\'t correct')
 
 def _checkPath(pathName, path):
-    if not path.exists(path) && is not path.isdir(path):
+    if not path.exists(path) and not path.isdir(path):
         logger.debug(path + 'doesn\'t exist!!!!!')
-    else logger.debug(pathName + path)
+    else:
+        logger.debug(pathName + path)

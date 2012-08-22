@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #  Copyright 2012 by Giorgos Tsiapaliokas <terietor@gmail.com>
 #
 #  This program is free software; you can redistribute it and/or
@@ -17,8 +15,8 @@
 #  the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #  Boston, MA 02110-1301, USA.
 
+import logging
 import test_modules
-logging
 
 logger = logging.getLogger('test_kpytool')
 logger.setLevel(logging.DEBUG)
