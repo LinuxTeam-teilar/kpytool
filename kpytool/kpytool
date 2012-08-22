@@ -71,42 +71,46 @@ def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    logger.debug('This is namespace of argparse:\n' + str(results) + '\n')
-
-    logger.debug('These are the modules:\n' + str(modules) + '\n')
-
     logger.debug('The kpytool config is:' + results.config)
 
-    m = ModuleReader('kdelibs')
-    m.parseData()
-    if not results.src and \
-    not results.configure and \
-    not results.build and \
-    not results.install:
-        #the user has used ./kpytool $someModule, so
-        #pretend that the above are correct!
-        #and update, configure, build and install
-        pass
+    logger.debug('This is namespace of argparse:\n' + str(results) + '\n')
 
-    elif results.src:
-        #dl
-        pass
+    reader = ModuleReader(results.config)
 
-    elif results.no_src:
-        #dl, configure, build and install
-        pass
+    if len(modules) == 0:
+        modules = reader.moduleDefaultList
 
-    elif results.configure:
-        #configure
-        pass
+    logger.debug('These are the modules:\n' + modules + '\n')
 
-    elif results.build:
-        #build
-        pass
+    for moduleName in modules:
+        if not results.src and \
+        not results.configure and \
+        not results.build and \
+        not results.install:
+            #the user has used ./kpytool $someModule, so
+            #pretend that the above are correct!
+            #and update, configure, build and install
+            pass
 
-    elif results.install:
-        #install
-        pass
+        elif results.src:
+            #dl
+            pass
+
+        elif results.no_src:
+            #dl, configure, build and install
+            pass
+
+        elif results.configure:
+            #configure
+            pass
+
+        elif results.build:
+            #build
+            pass
+
+        elif results.install:
+            #install
+            pass
 
 
 if __name__ == '__main__':
