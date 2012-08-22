@@ -39,7 +39,7 @@ class ModuleReader(object):
         self._KpytoolCfg.read()
 
         #this is the default module list
-        self._moduleList = []
+        self._moduleDefaultList = []
 
         #this is the module name
         self._moduleName = moduleName
@@ -78,11 +78,11 @@ class ModuleReader(object):
        self._moduleInfo = info
 
     @property
-    def moduleList(self):
+    def moduleDefaultList(self):
         #for i in self. _KpytoolCfg.default_modules:
         #     self.moduleName = i
         #    self._moduleList.append(self.moduleInfo)
-        return self._moduleList
+        return self._moduleDefaultList
 
     #TODO avoid setter, we want this to be
     #just read-only
@@ -131,15 +131,16 @@ class _KpytoolConfigReader(object):
         self._downloadKpytoolCfg()
 
         self._cfgReader = ConfigParser.RawConfigParser()
+
         self._cfgReader.read(self._kpytoolCfgPath)
 
 
     def read(self):
-        self.kpytool_configs = self._verifyItem(path.abspath(self._cfgReader.get('basic', 'kpytool-configs')))
-        self.kde_source = self._verifyItem(path.abspath(self._cfgReader.get('basic', 'kpytool-source')))
-        self.kde_binaries = self._verifyItem(path.abspath(self._cfgReader.get('basic', 'kpytool-binaries')))
-        self.kde_build = self._verifyItem(path.abspath(self._cfgReader.get('basic', 'kpytool-build')))
-        self.kde_logs = self._verifyItem(path.abspath(self._cfgReader.get('basic', 'kpytool-logs')))
+        self.kpytool_configs = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kpytool-configs')))
+        self.kde_source = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-source')))
+        self.kde_binaries = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-binaries')))
+        self.kde_build = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-build')))
+        self.kde_logs = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-logs')))
 
         #we need to check if the above dirs exist or not, if they don't then we will create them
         self._verifyDirs()
@@ -180,7 +181,7 @@ class _KpytoolConfigReader(object):
         #if it doesn't we will create it.
         if not path.exists(self.kpytool_configs) and not path.isdir(self.kpytool_configs):
             fileName = KPYTOOL_CONFIG_TARBALL.split('/')[-1]
-            logger.debug('This is tarball\'s name' + fileName)
+            logger.debug('This is tarball\'s name ' + fileName)
 
             #download the tarball
             u = urllib2.urlopen(KPYTOOL_CONFIG_TARBALL)
