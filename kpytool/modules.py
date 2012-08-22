@@ -82,6 +82,7 @@ class ModuleReader(object):
         #for i in self. _KpytoolCfg.default_modules:
         #     self.moduleName = i
         #    self._moduleList.append(self.moduleInfo)
+        self._parseData()
         return self._moduleDefaultList
 
     #TODO avoid setter, we want this to be
@@ -148,7 +149,7 @@ class _KpytoolConfigReader(object):
         self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options'))
         self.git_branch = self._verifyItem(self._cfgReader.get('general', 'git-branch'))
 
-        self.default_modules = self._verifyItem(self._cfgReader.get('general', 'default-modules')).split(',')
+        self.default_modules = self._verifyItem(self._cfgReader.get('basic', 'default-modules')).split(',')
 
     def _downloadKpytoolCfg(self):
         if not path.isfile(self._kpytoolCfgPath):
@@ -185,11 +186,11 @@ class _KpytoolConfigReader(object):
 
             #download the tarball
             u = urllib2.urlopen(KPYTOOL_CONFIG_TARBALL)
-            with open(fileName, 'wb') as tar:
-                tar.write(u.read())
-
-                #extract the tarball
-                tar.extractall(self.kpytool_configs)
+            with open(fileName, 'wb') as file:
+                file.write(u.read())
+                with tarfile.open(fileName, 'r:gz') as tar:
+                    #extract the tarball
+                    tar.extractall(self.kpytool_configs)
 
             #its unlikely the code to reach here, but if it does, kpytool won't
             #work correctly so we have to be sure. For sure some other exception
