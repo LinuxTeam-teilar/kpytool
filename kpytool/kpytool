@@ -83,34 +83,51 @@ def main():
     logger.debug('These are the modules:\n' + str(modules) + '\n')
 
     for moduleName in modules:
-        if not results.src and \
-        not results.configure and \
-        not results.build and \
-        not results.install:
-            #the user has used ./kpytool $someModule, so
-            #pretend that the above are correct!
-            #and update, configure, build and install
-            pass
+        reader.moduleName = moduleName
+        for moduleInfo in reader.moduleInfoList:
+            logger.debug('name:' + moduleInfo['name'])
+            logger.debug('parent:' + moduleInfo['parent'])
+            logger.debug('source:' + moduleInfo['source'])
+            logger.debug('vcs:' + moduleInfo['vcs'])
+            logger.debug('vcs-link:' + moduleInfo['vcs-link'])
+            logger.debug('vcs-branch:' + moduleInfo['vcs-branch'])
+            logger.debug('build:' + moduleInfo['build'])
+            logger.debug('install:' + moduleInfo['install'])
+            logger.debug('build-system-options:' + moduleInfo['build-system-options'])
 
-        elif results.src:
-            #dl
-            pass
+            if not results.src and \
+            not results.configure and \
+            not results.build and \
+            not results.install:
+                #the user has used ./kpytool , so
+                #pretend that the above are correct!
+                #and update, configure, build and install
+                results.src = True
+                results.configure = True
+                results.build = True
+                results.install = True
 
-        elif results.no_src:
-            #dl, configure, build and install
-            pass
+            if results.no_src:
+                # configure, build and install
+                results.configure = True
+                results.build = True
+                results.install = True
 
-        elif results.configure:
-            #configure
-            pass
+            if results.src:
+                #dl
+                pass
 
-        elif results.build:
-            #build
-            pass
+            if results.configure:
+                #configure
+                pass
 
-        elif results.install:
-            #install
-            pass
+            if results.build:
+                #build
+                pass
+
+            if results.install:
+                #install
+                pass
 
 
 if __name__ == '__main__':
