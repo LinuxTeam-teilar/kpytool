@@ -21,7 +21,7 @@ import fnmatch
 import ConfigParser
 import tarfile
 import urllib2
-from os import path, mkdir
+from os import path, mkdir, walk
 
 logger = logging.getLogger('kpytool.modules')
 KPYTOOL_CONFIG_TARBALL = 'https://github.com/downloads/LinuxTeam-teilar/kpytool-configs/kpytool-configs-0.1.tar.gz'
@@ -39,12 +39,25 @@ class ModuleReader(object):
         self._KpytoolCfg.read()
 
         #this is the default module list
-        self._moduleDefaultList = []
+        self._moduleInfo = {
+                                'name': '',
+                                'parent': '',
+                                'source': '',
+                                'vcs': '',
+                                'vcs-link': '',
+                                'vcs-branch': '',
+                                'build': '',
+                                'install': '',
+                                'build-system-options': ''
+        }
 
         #this is the module name
         self._moduleName = moduleName
 
-        self._moduleInfo = '' , '', '', ('', ''), '', '', ''
+        self._moduleInfoList = []
+
+        #this is the default module list
+        self._moduleDefaultList = []
 
 
     @property
@@ -58,56 +71,92 @@ class ModuleReader(object):
         self._parseData()
 
     """
-    returns a tuple which represends a module.
-    For instance frameworks contains kdelibs and kactivities.
-    So we will have 2 tuples and each of it will have
-    t[0]: module name, like kactivities
-    t[1]: parent name, like frameworks
-    t[2]: source path
-    t[3]: vcs, the link and branch(only for git)
-    t[4]: build dir
-    t[5]: install dir
-    t[6]: build system args
+    Returns a list of dictionaries.
+    Each dictionary represends a module..
+    t['name']: module name, like kactivities
+    t['parent']: parent name, like frameworks
+    t['source']: source path
+    t['vcs']: vcs type
+    t['vcs-link']: the vcs link
+    t['git-branch']: branch(only for git)
+    t['build']: build dir
+    t['install']: install dir
+    t['build-system-options']: build system options
     """
     @property
-    def moduleInfo(self):
-        return self._moduleInfo
-
-    @moduleInfo.setter
-    def moduleInfo(self, info):
-       self._moduleInfo = info
+    def moduleInfoList(self):
+        return self._moduleInfoList
 
     @property
     def moduleDefaultList(self):
-        #for i in self. _KpytoolCfg.default_modules:
-        #     self.moduleName = i
-        #    self._moduleList.append(self.moduleInfo)
-        self._parseData()
-        return self._moduleDefaultList
-
-    #TODO avoid setter, we want this to be
-    #just read-only
-    #@moduleList.setter
-    #def moduleList(self, list):
-    #    self._moduleList = list
+        return self._KpytoolCfg.default_modules
 
     """
-    It will parse the config files and it will return a boolean.
-    This method should be called before moduleList
+    It will parse the config files
     """
     def _parseData(self):
-        self.moduleName #Do something
-        ok = False
         matches = []
-        for root, dirnames, filenames in os.walk(self._KpytoolCfg.kpytool_configs):
-            for filename in fnmatch.filter(filenames, '*.cfg'):
-                #matches.append(os.path.join(root, filename))
-                logger.debug('root:' + root)
-                logger.debug('dirnames:' + str(dirnames))
-                logger.debug('filename:' + filename + '\n')
-                #TODO add more
 
-        return ok
+        #initialize our reader
+        reader = ConfigParser.RawConfigParser()
+
+        if self.moduleName.find('/') == -1:
+            pass
+        else:
+            logger.debug('starting dir for walk:\n' + path.join(self._KpytoolCfg.kpytool_configs, self.moduleName))
+            #this is a meta module, like playground/base
+            for root, dirnames, filenames in walk(path.join(self._KpytoolCfg.kpytool_configs, self.moduleName)):
+                for filename in fnmatch.filter(filenames, '*.cfg'):
+                    reader.read(path.join(root, filename))
+                    for moduleSection in reader.sections():
+                        #the frameworks.cfg contains 3 sections
+                        #*kdelibs
+                        #*kactivities
+                        #*nepomuk-core
+                        #iterate inside them
+                        moduleName = reader.get(moduleSection, 'name')
+                        moduleName = moduleName.lower()
+                        if self.moduleName == moduleName:
+                            logger.debug('root:' + root)
+                            logger.debug('dirnames:' + str(dirnames))
+                            logger.debug('filename:' + filename + '\n')
+                            self._moduleInfo['name'] = name
+                            self._moduleInfo['parent'] = root[len(self._KpytoolCfg.kpytool_configs) + len('/kpytool-configs/'):]
+
+                            modulePath = self._KpytoolCfg.kde_source, reader.get(moduleSection, 'source-path')
+                            self._moduleInfot['source'] = path.join(self._KpytoolCfg.kde_source, modulePath)
+
+                            possibleVcs = ['git', 'svn', 'bzr']
+                            for option in possibleVcs:
+                                try:
+                                    for link in reader.get(moduleSection, option):
+                                        self._moduleInfo['vcs'] = option
+                                        self._moduleInfo['vcs-link']
+                                        try:
+                                            #'git-branch' may not exist in a default *.cfg despite the fact that is git
+                                            self._moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
+                                        except ConfigParser.NoOptionError:
+                                            pass
+                                except ConfigParser.NoOptionError:
+                                    pass
+
+                            if not self._moduleInfo['vcs'] and not self._moduleInfo['vcs-link']:
+                                #TODO fix this error
+                                print 'errorrrrrrrrrrrrrrrrrr'
+
+
+                            self._moduleInfo['build'] = path.join(self._KpytoolCfg.kde_build, modulePath)
+                            self._moduleInfo['install'] = self._KpytoolCfg.kde_install
+
+                            try:
+                                self._moduleInfo['build-system-options'] = reader.get(moduleSection, 'build-system-options')
+                            except ConfigParser.NoOptionError:
+                                self._moduleInfo['build-system-options'] = self._KpytoolCfg.build_system_options
+
+                            #take the data
+                            matches.append = self._moduleInfo
+
+        self._moduleInfoList = matches
 
 """
 This class will retrieve the information
@@ -119,7 +168,7 @@ class _KpytoolConfigReader(object):
         self._kde_binaries = ''
         self._kde_build = ''
         self._kde_logs = ''
-        self._cmake_options = ''
+        self._build_system_options = ''
         self._git_branch = ''
         self._default_modules = []
         self._kpytool_configs = ''
@@ -169,6 +218,7 @@ class _KpytoolConfigReader(object):
         if item:
             return item
         else:
+            #TODO fix this error
             print 'Your .kpytool.cfg is damaged!!'
             return ''
 
@@ -232,12 +282,12 @@ class _KpytoolConfigReader(object):
         self._kde_build = path
 
     @property
-    def cmake_options(self):
-        return self._cmake_options
+    def build_system_options(self):
+        return self._build_system_options
 
-    @cmake_options.setter
-    def cmake_options(self, path):
-        self._cmake_options = path
+    @build_system_options.setter
+    def build_system_options(self, options):
+        self._build_system_options = options
 
     @property
     def git_branch(self):
