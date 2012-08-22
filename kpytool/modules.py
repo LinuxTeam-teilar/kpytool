@@ -18,7 +18,7 @@
 
 import logging
 import fnmatch
-import configParser
+import ConfigParser
 import tarfile
 import urllib2
 from os import path, mkdir
@@ -31,7 +31,7 @@ KPYTOOL_CFG = 'https://github.com/downloads/LinuxTeam-teilar/kpytool-configs/kpy
 This class will retrieve the informations for each module
 """
 class ModuleReader(object):
-    def __init__(self, moduleName = '', kpytoolConfig):
+    def __init__(self, kpytoolConfig, moduleName = ''):
         #initialize the config reader for .kpytool.cfg
         self. _KpytoolCfg =  _KpytoolConfigReader(kpytoolConfig)
 
@@ -57,7 +57,7 @@ class ModuleReader(object):
         #now parse the data
         self._parseData()
 
-     """
+    """
     returns a tuple which represends a module.
     For instance frameworks contains kdelibs and kactivities.
     So we will have 2 tuples and each of it will have
@@ -73,8 +73,8 @@ class ModuleReader(object):
     def moduleInfo(self):
         return self._moduleInfo
 
-   @moduleInfo.setter
-   def moduleInfo(self, info):
+    @moduleInfo.setter
+    def moduleInfo(self, info):
        self._moduleInfo = info
 
     @property
@@ -144,14 +144,14 @@ class _KpytoolConfigReader(object):
         #we need to check if the above dirs exist or not, if they don't then we will create them
         self._verifyDirs()
 
-        self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options')))
+        self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options'))
         self.git_branch = self._verifyItem(self._cfgReader.get('general', 'git-branch'))
 
         self.default_modules = self._verifyItem(self._cfgReader.get('general', 'default-modules')).split(',')
 
     def _downloadKpytoolCfg(self):
         if not path.isfile(self._kpytoolCfgPath):
-            u = urllib2.urlopen(KPYTOOL_CFG):
+            u = urllib2.urlopen(KPYTOOL_CFG)
             with open(self._kpytoolCfgPath, 'w') as kpytool_cfg:
                 kpytool_cfg.write(u.read())
 
@@ -184,7 +184,7 @@ class _KpytoolConfigReader(object):
 
             #download the tarball
             u = urllib2.urlopen(KPYTOOL_CONFIG_TARBALL)
-            with open(fileName, 'wb') as tar
+            with open(fileName, 'wb') as tar:
                 tar.write(u.read())
 
                 #extract the tarball
