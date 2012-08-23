@@ -136,7 +136,7 @@ class ModuleReader(object):
                                             #'git-branch' may not exist in a default *.cfg despite the fact that is git
                                             self._moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
                                         except ConfigParser.NoOptionError:
-                                            pass
+                                            self._moduleInfo['git-branch'] = 'master'
                                 except ConfigParser.NoOptionError:
                                     pass
 
@@ -176,29 +176,41 @@ class _KpytoolConfigReader(object):
         #needed for _downloadKpytoolCfg
         self._kpytoolCfgPath = path
 
-
-        #download .kpytool.cfg
-        self._downloadKpytoolCfg()
-
         self._cfgReader = ConfigParser.RawConfigParser()
 
         self._cfgReader.read(self._kpytoolCfgPath)
 
+        #download .kpytool.cfg
+        self._downloadKpytoolCfg()
+
+        #download the kpytool-configs tar and extract it
+        self._downloadTarball()
+
 
     def read(self):
-        self.kpytool_configs = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kpytool-configs')))
+        self.kpytool_configs = path.join(self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kpytool-configs'))), 'kpytool-configs')
         self.kde_source = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-source')))
         self.kde_binaries = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-binaries')))
         self.kde_build = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-build')))
         self.kde_logs = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-logs')))
 
-        #we need to check if the above dirs exist or not, if they don't then we will create them
-        self._verifyDirs()
-
         self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options'))
         self.git_branch = self._verifyItem(self._cfgReader.get('general', 'git-branch'))
 
         self.default_modules = self._verifyItem(self._cfgReader.get('basic', 'default-modules')).split(',')
+
+    """
+    Verify if the item is valid
+    """
+    def _verifyItem(self, item):
+        if item:
+            if not path.exists(item) and not path.isdir(item):
+                mkdir(item)
+            return item
+        else:
+            #TODO fix this error
+            print 'Your .kpytool.cfg is damaged!!'
+            return ''
 
     def _downloadKpytoolCfg(self):
         if not path.isfile(self._kpytoolCfgPath):
@@ -211,26 +223,11 @@ class _KpytoolConfigReader(object):
             #would be raised but even in uber failure don't scary the user
             #TODO raise an exception here if the file doesn't exist
 
-    """
-    Verify if the item is valid
-    """
-    def _verifyItem(self, item):
-        if item:
-            return item
-        else:
-            #TODO fix this error
-            print 'Your .kpytool.cfg is damaged!!'
-            return ''
-
-    def _verifyDirs(self):
-        #first check for the more 'common' dirs
-        for d in [self.kde_source, self.kde_binaries, self.kde_build, self.kde_logs]:
-            if not path.exists(d) and not path.isdir(d):
-                mkdir(d)
-
+    def _downloadTarball(self):
         #now we need to check if the kpytool-config dir exists or not,
         #if it doesn't we will create it.
-        if not path.exists(self.kpytool_configs) and not path.isdir(self.kpytool_configs):
+        kpytool_configs_path = path.join(self.kpytool_configs, 'kpytool-configs')
+        if not path.exists(kpytool_configs_path) and not path.isdir(kpytool_configs_path):
             fileName = KPYTOOL_CONFIG_TARBALL.split('/')[-1]
             logger.debug('This is tarball\'s name ' + fileName)
 
@@ -238,15 +235,14 @@ class _KpytoolConfigReader(object):
             u = urllib2.urlopen(KPYTOOL_CONFIG_TARBALL)
             with open(fileName, 'wb') as file:
                 file.write(u.read())
-                with tarfile.open(fileName, 'r:gz') as tar:
-                    #extract the tarball
-                    tar.extractall(self.kpytool_configs)
+            with tarfile.open(fileName) as tar:
+                #extract the tarball
+                tar.extractall(self.kpytool_configs)
 
             #its unlikely the code to reach here, but if it does, kpytool won't
             #work correctly so we have to be sure. For sure some other exception
             #would be raised but even in uber failure don't scary the user
             #TODO raise an exception here if the dirs doesn't exist
-
 
 
     @property
