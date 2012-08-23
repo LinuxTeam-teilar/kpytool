@@ -114,47 +114,44 @@ class ModuleReader(object):
                         #*kactivities
                         #*nepomuk-core
                         #iterate inside them
-                        moduleName = reader.get(moduleSection, 'name')
-                        moduleName = moduleName.lower()
-                        if self.moduleName == moduleName:
-                            logger.debug('root:' + root)
-                            logger.debug('dirnames:' + str(dirnames))
-                            logger.debug('filename:' + filename + '\n')
-                            self._moduleInfo['name'] = name
-                            self._moduleInfo['parent'] = root[len(self._KpytoolCfg.kpytool_configs) + len('/kpytool-configs/'):]
+                        logger.debug('root:' + root)
+                        logger.debug('dirnames:' + str(dirnames))
+                        logger.debug('filename:' + filename + '\n')
+                        self._moduleInfo['name'] = reader.get(moduleSection, 'name')
+                        self._moduleInfo['parent'] = root[len(self._KpytoolCfg.kpytool_configs) + len('/kpytool-configs/'):]
 
-                            modulePath = self._KpytoolCfg.kde_source, reader.get(moduleSection, 'source-path')
-                            self._moduleInfot['source'] = path.join(self._KpytoolCfg.kde_source, modulePath)
+                        modulePath = reader.get(moduleSection, 'source-path')
+                        self._moduleInfo['source'] = path.join(self._KpytoolCfg.kde_source, modulePath)
 
-                            possibleVcs = ['git', 'svn', 'bzr']
-                            for option in possibleVcs:
-                                try:
-                                    for link in reader.get(moduleSection, option):
-                                        self._moduleInfo['vcs'] = option
-                                        self._moduleInfo['vcs-link']
-                                        try:
-                                            #'git-branch' may not exist in a default *.cfg despite the fact that is git
-                                            self._moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
-                                        except ConfigParser.NoOptionError:
-                                            self._moduleInfo['git-branch'] = 'master'
-                                except ConfigParser.NoOptionError:
-                                    pass
-
-                            if not self._moduleInfo['vcs'] and not self._moduleInfo['vcs-link']:
-                                #TODO fix this error
-                                print 'errorrrrrrrrrrrrrrrrrr'
-
-
-                            self._moduleInfo['build'] = path.join(self._KpytoolCfg.kde_build, modulePath)
-                            self._moduleInfo['install'] = self._KpytoolCfg.kde_install
-
+                        possibleVcs = ['git', 'svn', 'bzr']
+                        for option in possibleVcs:
                             try:
-                                self._moduleInfo['build-system-options'] = reader.get(moduleSection, 'build-system-options')
+                                for link in reader.get(moduleSection, option):
+                                    self._moduleInfo['vcs'] = option
+                                    self._moduleInfo['vcs-link']
+                                    try:
+                                        #'git-branch' may not exist in a default *.cfg despite the fact that is git
+                                        self._moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
+                                    except ConfigParser.NoOptionError:
+                                        self._moduleInfo['git-branch'] = 'master'
                             except ConfigParser.NoOptionError:
+                                pass
+
+                        if not self._moduleInfo['vcs'] and not self._moduleInfo['vcs-link']:
+                            #TODO fix this error
+                            print 'errorrrrrrrrrrrrrrrrrr'
+
+
+                        self._moduleInfo['build'] = path.join(self._KpytoolCfg.kde_build, modulePath)
+                        self._moduleInfo['install'] = self._KpytoolCfg.kde_binaries
+
+                        try:
+                            self._moduleInfo['build-system-options'] = reader.get(moduleSection, 'build-system-options')
+                        except ConfigParser.NoOptionError:
                                 self._moduleInfo['build-system-options'] = self._KpytoolCfg.build_system_options
 
-                            #take the data
-                            matches.append = self._moduleInfo
+                        #take the data
+                        matches.append(self._moduleInfo)
 
         self._moduleInfoList = matches
 
