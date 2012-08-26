@@ -85,6 +85,7 @@ def main():
     for moduleName in modules:
         reader.moduleName = moduleName
         for moduleInfo in reader.moduleInfoList:
+            logger.debug('===========================================================')
             logger.debug('name:' + moduleInfo['name'])
             logger.debug('parent:' + moduleInfo['parent'])
             logger.debug('source:' + moduleInfo['source'])
@@ -94,6 +95,9 @@ def main():
             logger.debug('build:' + moduleInfo['build'])
             logger.debug('install:' + moduleInfo['install'])
             logger.debug('build-system-options:' + moduleInfo['build-system-options'])
+            logger.debug('===========================================================')
+            logger.debug('\n')
+            logger.debug('\n')
 
             if not results.src and \
             not results.configure and \
