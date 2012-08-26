@@ -45,6 +45,7 @@ class ModuleReader(object):
                                 'vcs-branch': '',
                                 'build': '',
                                 'install': '',
+                                'log': '',
                                 'build-system-options': ''
         }
 
@@ -78,6 +79,9 @@ class ModuleReader(object):
     t['git-branch']: branch(only for git)
     t['build']: build dir
     t['install']: install dir
+    t['log']: return the dir for the logs
+    NOTE: this is the root dir of the logs, inside there are
+    files like, vcs.txt, buildsystem.txt, etc
     t['build-system-options']: build system options
     """
     @property
@@ -148,6 +152,7 @@ class ModuleReader(object):
                         except ConfigParser.NoOptionError:
                             self._moduleInfo['build-system-options'] = self._KpytoolCfg.build_system_options
 
+                        self._moduleInfo['log'] = path.join(self._KpytoolCfg.kde_logs, modulePath)
 
                         matches.append(self._moduleInfo)
 

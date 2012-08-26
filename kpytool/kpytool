@@ -95,9 +95,8 @@ def main():
             logger.debug('build:' + moduleInfo['build'])
             logger.debug('install:' + moduleInfo['install'])
             logger.debug('build-system-options:' + moduleInfo['build-system-options'])
-            logger.debug('===========================================================')
-            logger.debug('\n')
-            logger.debug('\n')
+            logger.debug('logs:' + moduleInfo['log'])
+            logger.debug('=========================================================== \n \n')
 
             if not results.src and \
             not results.configure and \
