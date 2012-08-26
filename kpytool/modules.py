@@ -184,10 +184,10 @@ class _KpytoolConfigReader(object):
         self.kde_build = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-build')))
         self.kde_logs = self._verifyItem(path.expanduser(self._cfgReader.get('basic', 'kde-logs')))
 
-        self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options'))
-        self.git_branch = self._verifyItem(self._cfgReader.get('general', 'git-branch'))
+        self.cmake_options = self._verifyItem(self._cfgReader.get('general', 'cmake-options'), False)
+        self.git_branch = self._verifyItem(self._cfgReader.get('general', 'git-branch'), False)
 
-        self.default_modules = self._verifyItem(self._cfgReader.get('basic', 'default-modules')).split(',')
+        self.default_modules = self._verifyItem(self._cfgReader.get('basic', 'default-modules'), False).split(',')
 
         #download .kpytool.cfg
         self._downloadKpytoolCfg()
@@ -198,10 +198,11 @@ class _KpytoolConfigReader(object):
     """
     Verify if the item is valid
     """
-    def _verifyItem(self, item):
+    def _verifyItem(self, item, createDirs = True):
         if item:
-            if not path.exists(item) and not path.isdir(item):
-                mkdir(item)
+            if createDirs:
+                if not path.exists(item) and not path.isdir(item):
+                    mkdir(item)
             return item
         else:
             #TODO fix this error
