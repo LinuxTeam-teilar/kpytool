@@ -113,7 +113,6 @@ class ModuleReader(object):
                                 'log': '',
                                 'build-system-options': ''
                         }
-                        #print reader.sections()
 
                         #the frameworks.cfg contains 3 sections
                         #*kdelibs
