@@ -75,16 +75,16 @@ def main():
 
     logger.debug('This is namespace of argparse:\n' + str(results) + '\n')
 
-    reader = ModuleReader(results.config)
-
     if len(modules) == 0:
         modules = reader.moduleDefaultList
 
     logger.debug('These are the modules:\n' + str(modules) + '\n')
 
     for moduleName in modules:
+        reader = ModuleReader(results.config)
         reader.moduleName = moduleName
         for moduleInfo in reader.moduleInfoList:
+
             logger.debug('===========================================================')
             logger.debug('name:' + moduleInfo['name'])
             logger.debug('parent:' + moduleInfo['parent'])
