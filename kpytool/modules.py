@@ -107,7 +107,7 @@ class ModuleReader(object):
                                 'source': '',
                                 'vcs': '',
                                 'vcs-link': '',
-                                'vcs-branch': '',
+                                'git-branch': '',
                                 'build': '',
                                 'install': '',
                                 'log': '',

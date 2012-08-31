@@ -91,7 +91,7 @@ def main():
             logger.debug('source:' + moduleInfo['source'])
             logger.debug('vcs:' + moduleInfo['vcs'])
             logger.debug('vcs-link:' + moduleInfo['vcs-link'])
-            logger.debug('vcs-branch:' + moduleInfo['vcs-branch'])
+            logger.debug('git-branch:' + moduleInfo['git-branch'])
             logger.debug('build:' + moduleInfo['build'])
             logger.debug('install:' + moduleInfo['install'])
             logger.debug('build-system-options:' + moduleInfo['build-system-options'])
