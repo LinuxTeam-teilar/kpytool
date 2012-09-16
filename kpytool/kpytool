@@ -75,13 +75,15 @@ def main():
 
     logger.debug('This is namespace of argparse:\n' + str(results) + '\n')
 
+    #init the reader
+    reader = ModuleReader(results.config)
+
     if len(modules) == 0:
         modules = reader.moduleDefaultList
 
     logger.debug('These are the modules:\n' + str(modules) + '\n')
 
     for moduleName in modules:
-        reader = ModuleReader(results.config)
         reader.moduleName = moduleName
         for moduleInfo in reader.moduleInfoList:
 
@@ -98,6 +100,7 @@ def main():
             logger.debug('logs:' + moduleInfo['log'])
             logger.debug('=========================================================== \n \n')
 
+            #TODO if len(results) == 0:
             if not results.src and \
             not results.configure and \
             not results.build and \

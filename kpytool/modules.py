@@ -82,28 +82,47 @@ class ModuleReader(object):
     It will parse the config files
     """
     def _parseData(self):
-        matches = []
+        walkPath = ''
+        parentName = ''
+        parseAllSections = False
 
         if self.moduleName.find('/') == -1:
-            pass
+            #this is a simple module, like plasmate
+            walkPath = self._KpytoolCfg.kpytool_configs
         else:
-            logger.debug('starting dir for walk:\n' + path.join(self._KpytoolCfg.kpytool_configs, self.moduleName))
             #this is a meta module, like playground/base
-            for root, dirnames, filenames in walk(path.join(self._KpytoolCfg.kpytool_configs, self.moduleName)):
-                for filename in fnmatch.filter(filenames, '*.cfg'):
-                    #logger.debug('root:' + root)
-                    #logger.debug('dirnames:' + str(dirnames))
-                    #logger.debug('filename:' + filename + '\n')
+            walkPath = path.join(self._KpytoolCfg.kpytool_configs, self.moduleName)
+            parseAllSections = True
 
-                    #initialize our reader
-                    reader = ConfigParser.RawConfigParser()
+            #     parentName = root[len(self._KpytoolCfg.kpytool_configs) + len('/kpytool-configs/'):]
 
-                    #read the specific file
-                    reader.read(path.join(root, filename))
-                    for moduleSection in reader.sections():
-                        moduleInfo = {
+        logger.debug('starting dir for walk:\n' + walkPath)
+        #this is a simple module, like plasmate
+        for root, dirnames, filenames in walk(walkPath):
+            for filename in fnmatch.filter(filenames, '*.cfg'):
+                #initialize our reader
+                reader = ConfigParser.RawConfigParser()
+
+                #read the specific file
+                reader.read(path.join(root, filename))
+
+                #init
+                sections = []
+
+                #find the right sections
+                if parseAllSections:
+                    sections = reader.sections()
+                else:
+                    #TODO fix it
+                    if self.moduleName in reader.sections():
+                        for r in reader.sections():
+                            if self.moduleName == r:
+                                sections.append(r)
+
+                for moduleSection in sections:
+                    moduleInfo = {
                                 'name': '',
-                                'parent': '',
+                                'parent': '','build-system-options'
                                 'source': '',
                                 'vcs': '',
                                 'vcs-link': '',
@@ -112,48 +131,49 @@ class ModuleReader(object):
                                 'install': '',
                                 'log': '',
                                 'build-system-options': ''
-                        }
+                    }
 
-                        #the frameworks.cfg contains 3 sections
-                        #*kdelibs
-                        #*kactivities
-                        #*nepomuk-core
-                        #iterate inside them
-                        moduleInfo['name'] = reader.get(moduleSection, 'name')
-                        moduleInfo['parent'] = root[len(self._KpytoolCfg.kpytool_configs) + len('/kpytool-configs/'):]
+                    #the frameworks.cfg contains 3 sections
+                    #*kdelibs
+                    #*kactivities
+                    #*nepomuk-core
+                    #iterate inside them
+                    moduleInfo['name'] = reader.get(moduleSection, 'name')
+                    moduleInfo['parent'] = parentName
 
-                        modulePath = reader.get(moduleSection, 'source-path')
-                        moduleInfo['source'] = path.join(self._KpytoolCfg.kde_source, modulePath)
+                    modulePath = reader.get(moduleSection, 'source-path')
+                    moduleInfo['source'] = path.join(self._KpytoolCfg.kde_source, modulePath)
 
-                        possibleVcs = ['git', 'svn', 'bzr']
-                        for option in possibleVcs:
+                    possibleVcs = ['git', 'svn', 'bzr']
+                    for option in possibleVcs:
+                        try:
+                            moduleInfo['vcs-link'] = reader.get(moduleSection, option)
+                            moduleInfo['vcs'] = option
                             try:
-                                moduleInfo['vcs-link'] = reader.get(moduleSection, option)
-                                moduleInfo['vcs'] = option
-                                try:
-                                    #'git-branch' may not exist in a default *.cfg despite the fact that is git
-                                    moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
-                                except ConfigParser.NoOptionError:
-                                    moduleInfo['git-branch'] = self._KpytoolCfg.git_branch
+                                #'git-branch' may not exist in a default *.cfg despite the fact that is git
+                                moduleInfo['git-branch'] = reader.get(moduleSection, 'git-branch')
                             except ConfigParser.NoOptionError:
+                                moduleInfo['git-branch'] = self._KpytoolCfg.git_branch
+                        except ConfigParser.NoOptionError:
                                 pass
 
-                        if not moduleInfo['vcs'] and not moduleInfo['vcs-link']:
-                            #TODO fix this error
-                            print 'errorrrrrrrrrrrrrrrrrr'
+                    if not moduleInfo['vcs'] and not moduleInfo['vcs-link']:
+                        #TODO fix this error
+                        print 'errorrrrrrrrrrrrrrrrrr'
 
 
-                        moduleInfo['build'] = path.join(self._KpytoolCfg.kde_build, modulePath)
-                        moduleInfo['install'] = self._KpytoolCfg.kde_binaries
+                    moduleInfo['build'] = path.join(self._KpytoolCfg.kde_build, modulePath)
+                    moduleInfo['install'] = self._KpytoolCfg.kde_binaries
 
-                        try:
-                            moduleInfo['build-system-options'] = reader.get(moduleSection, 'build-system-options')
-                        except ConfigParser.NoOptionError:
-                            moduleInfo['build-system-options'] = self._KpytoolCfg.build_system_options
+                    try:
+                        moduleInfo['build-system-options'] = reader.get(moduleSection, 'build-system-options')
+                    except ConfigParser.NoOptionError:
+                        moduleInfo['build-system-options'] = self._KpytoolCfg.build_system_options
 
-                        moduleInfo['log'] = path.join(self._KpytoolCfg.kde_logs, modulePath)
+                    moduleInfo['log'] = path.join(self._KpytoolCfg.kde_logs, modulePath)
 
-                        self._moduleInfoList.append(moduleInfo)
+                    self._moduleInfoList.append(moduleInfo)
+
 
 """
 This class will retrieve the information
